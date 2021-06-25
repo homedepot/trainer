@@ -1,0 +1,31 @@
+name: jrava
+txn:
+- name: start
+  init_action:
+  - type: callback
+    args:
+      # curly braces means a static template variable, angled are run on each execution
+      # of the action.
+      url: "<<index .Bases \"testurl\">>/blah"
+      payload_contenttype: json
+      payload: actionpayload
+      method: POST
+      response_type: json
+      save_response: response
+      save_response_map: responsemap
+  - type: advance
+    args:
+      txn: comparevars
+- name: comparevars
+  init_action:
+    - type: conditional
+      args:
+        term:
+          variable: responsemap.map1.node1
+          conditional: eq
+          conditional_value: "value"
+        advance_true: success
+        advance_false: failure
+- name: success
+- name: failure
+

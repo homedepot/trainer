@@ -1,0 +1,10 @@
+name: check_testvar
+init_action:
+- type: conditional
+  args:
+    term:
+      variable: testvar
+      conditional: eq
+      conditional_value: 0
+    advance_true: set_testvar
+    advance_false: fail

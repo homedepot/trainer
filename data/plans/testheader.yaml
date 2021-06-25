@@ -1,0 +1,49 @@
+name: header_test
+# declare the variables this plan will use.
+variables:
+  guid: ""
+  response: ""
+  success: false
+  failure: false
+  finished: false
+  testvar: 0
+stop_var: finished
+txn:
+  - name: transaction_1
+    init_action:
+      - type: log
+        args:
+          value: "Starting init_action"
+          log_level: "WARNING"
+      - type: callback
+        args:
+          url: "<<index .Bases \"testurl\">>/blah"
+          payload_contenttype: json
+          payload: actionpayload
+          auth_header: "<<index .Variables \"authorization\">>"
+          headers:
+            X-Header1: "aheader1"
+            X-Header2: "aheader2"
+          method: POST
+          response_type: json
+          save:
+            - guid
+      - type: advance
+        args:
+          txn: txn_success
+  # this job doesn't fail.  The test will determine whether the proper headers were pushed.
+  - name: txn_success
+    init_action:
+      - type: set
+        args:
+          variable: success
+          value: true
+      - type: advance
+        args:
+          txn: empty
+  - name: empty
+    init_action:
+      - type: set
+        args:
+          variable: finished
+          value: true

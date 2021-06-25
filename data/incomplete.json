@@ -1,0 +1,9 @@
+{
+  "result": {
+    "allyourbase.example.com": {
+      "ci": "allyourbase.example.com",
+      "finished": 1,
+      "finishedbool": true
+    }
+  }
+}

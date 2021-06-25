@@ -1,0 +1,37 @@
+name: test_source
+  # declare the variables this plan will use.
+variables:
+  source: 1
+  destination: 0
+  finished: false
+txn:
+  - name: set_destvar
+    init_action:
+      - type: set
+        args:
+          variable: destination
+          source: source
+      - type: advance
+        args:
+          txn: conditional
+  - name: conditional
+    init_action:
+      - type: conditional
+        args:
+          term:
+            variable: destination
+            conditional: eq
+            conditional_value: 1
+          advance_true: success
+          advance_false: empty
+  - name: success
+    init_action:
+      - type: set
+        args:
+          variable: success
+          value: true
+      - type: advance
+        args:
+          txn: empty
+  - name: empty
+start_transaction: set_destvar

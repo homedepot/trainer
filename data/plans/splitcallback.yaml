@@ -1,0 +1,65 @@
+name: cbsplit
+# declare the variables this plan will use.
+variables:
+  guid: ""
+  response: ""
+  success: false
+  failure: false
+  finished: false
+  testvar: 0
+stop_var: finished
+externalvars: basic_test/variables.yml
+txn:
+  - name: callback
+    init_action:
+    - type: log
+      args:
+        value: "Starting init_action"
+        log_level: "WARNING"
+    - type: cbsplit
+      args:
+        url: "<<index .Bases \"testurl\">>/blah"
+        payload_contenttype: json
+        payload: actionpayload
+        auth_header: "<<index .Variables \"authorization\">>"
+        method: POST
+        response_type: json
+    - type: advance
+      args:
+        txn: finish_callback
+  - name: finish_callback
+    init_action:
+      - type: cbfinish
+        args:
+      - type: advance
+        args:
+          txn: txn_success
+  - name: txn_success
+  # do something that says we succeeded
+    init_action:
+      - type: set
+        args:
+          variable: success
+          value: true
+      - type: advance
+        args:
+          txn: empty
+  - name: txn_failure
+    init_action:
+      - type: set
+        args:
+          variable: failure
+          value: true
+      - type: advance
+        args:
+          txn: empty
+  # do something that says we failed
+  # this is an empty transaction.  It should stop here until reset.
+  - name: empty
+    init_action:
+      - type: set
+        args:
+          variable: finished
+          value: true
+  - name: fail
+

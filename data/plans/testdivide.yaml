@@ -1,0 +1,36 @@
+name: testdivide
+variables:
+  counter: 10
+txn:
+  - name: math
+    init_action:
+    - type: math
+      args:
+        action: divide
+        value: 5
+        variable: counter
+    - type: advance
+      args:
+         txn: conditional
+  - name: conditional
+    init_action:
+    - type: conditional
+      args:
+        term:
+          variable: counter
+          conditional: eq
+          conditional_value: 2
+        advance_true: success
+        advance_false: emptyfail
+  - name: success
+    init_action:
+    - type: set
+      args:
+        variable: success
+        value: true
+    - type: advance
+      args:
+        txn: empty
+  - name: empty
+  - name: emptyfail
+

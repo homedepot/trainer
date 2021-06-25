@@ -1,0 +1,17 @@
+name: testignorefailure
+txn:
+- name: ignorefailure_callback
+  init_action:
+  - type: callback
+    args:
+      url: "<<index .Bases \"testurl\">>/blah"
+      payload_contenttype: json
+      payload: actionpayload
+      auth_header: Basic bWlzdHk6Z290dGFwQHNzZW1hbGw=
+      method: POST
+      response_type: json
+      ignore_failure: true
+  - type: advance
+    args:
+      txn: empty
+- name: empty

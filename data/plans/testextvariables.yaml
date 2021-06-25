@@ -1,0 +1,4 @@
+name: testextvariables
+externalvars: testextvariables/variables.yml
+txn:
+- name: empty

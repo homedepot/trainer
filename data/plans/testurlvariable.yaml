@@ -1,0 +1,53 @@
+name: testurlvariable
+variables:
+    success: false
+    failure: false
+    finished: false
+stop_var: finished
+txn:
+  - name: transaction_1
+    url: /api/v1/url1
+    data: url1_expect.yml
+    datatype: json
+    save_body: bert
+    save_body_as_map: ernie
+    on_expected:
+      response: url1.yml
+      response_contenttype: application/json
+      response_code: 200
+      action:
+      - type: advance
+        args:
+          txn: txn_success
+    on_unexpected:
+      response: url1_unexpected.yml
+      response_code: 401
+      action:
+      - type: advance
+        args:
+          txn: txn_failure
+  - name: txn_success
+  # do something that says we succeeded
+    init_action:
+    - type: set
+      args:
+        variable: success
+        value: true
+    - type: advance
+      args:
+        txn: empty
+  - name: txn_failure
+    init_action:
+    - type: set
+      args:
+        variable: failure
+        value: true
+    - type: advance
+      args:
+        txn: empty
+  - name: empty
+    init_action:
+    - type: set
+      args:
+        variable: finished
+        value: true

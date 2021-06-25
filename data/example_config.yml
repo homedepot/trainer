@@ -1,0 +1,17 @@
+---
+plan:
+  - name: basic_test
+    txn:
+    - name: transaction_1
+      url: /api/v1/url1
+      data: url1_expect.yml
+      on_expected:
+        response: url1.yml
+        response_code: 200
+        action:
+        - type: reset
+      on_unexpected:
+        response: url1.yml
+        response_code: 200
+        action:
+        - type: reset

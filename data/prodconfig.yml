@@ -1,0 +1,23 @@
+default_plan: success
+plan:
+  - name: success
+    txn:
+    - name: launch
+      url: /orchestrator/v1/command/task
+      data: empty.yml
+      on_expected:
+        response: empty.yml
+        response_code: 200
+        action:
+        - type: callback
+          args:
+            url: http://something/jason_failed
+            method: POST
+      on_unexpected:
+        response: empty.yml
+        response_code: 401
+        action:
+        - type: callback
+          args:
+            url: http://something/jason_failed
+            method: GET

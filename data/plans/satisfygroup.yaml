@@ -1,0 +1,58 @@
+name: satisfy_group
+variables:
+  finished: false
+  success: false
+stop_var: finished
+txn:
+  - name: group
+    init_action:
+      - type: url
+        satisfy_group: group1
+        args:
+          url: /api/v1/url1
+          on_expected:
+            response: url1.yml
+            response_code: "200"
+            action:
+              - type: advance
+                args:
+                  txn: finish
+          on_unexpected:
+            response_code: "400"
+            action:
+              - type: advance
+                args:
+                  txn: fail
+      - type: url
+        satisfy_group: group1
+        args:
+          url: /api/v1/url2
+          on_expected:
+            response: url2.yml
+            response_code: "200"
+            action:
+              - type: advance
+                args:
+                  txn: finish
+          on_unexpected:
+            response_code: "400"
+            action:
+              - type: advance
+                args:
+                  txn: fail
+  - name: finish
+    init_action:
+      - type: set
+        args:
+          variable: success
+          value: true
+      - type: set
+        args:
+          variable: finished
+          value: true
+  - name: fail
+    init_action:
+      - type: set
+        args:
+          variable: finished
+          value: true

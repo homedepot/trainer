@@ -1,0 +1,69 @@
+name: testmatchstring
+# declare the variables this plan will use.
+variables:
+  destination: ""
+  finished : false
+stop_var: finished
+start_transaction: set_destvar
+txn:
+  - name: set_destvar
+    init_action:
+      - type: log
+        args:
+          value: "starting set_destvar"
+          log_level: WARNING
+      - type: set
+        args:
+          value: matchthis
+          variable: response
+      - type: advance
+        args:
+          txn: match_var
+  - name: match_var
+    init_action:
+      - type: match
+        args:
+          match_file: stringmatch.txt
+          match_file_type: string
+          advance_true: incorrect_string
+          advance_false: txn_failure
+          variable: response
+          response_type: string
+  - name: incorrect_string
+    init_action:
+      - type: match
+        args:
+          match_file: stringmatchincorrect.txt
+          match_file_type: string
+          advance_true: txn_success
+          advance_false: txn_failure
+          variable: response
+          response_type: string
+  - name: txn_success
+    # do something that says we succeeded
+    init_action:
+      - type: set
+        args:
+          variable: success
+          value: true
+      - type: advance
+        args:
+          txn: empty
+  - name: txn_failure
+    init_action:
+      - type: set
+        args:
+          variable: failure
+          value: true
+      - type: advance
+        args:
+          txn: empty
+  # do something that says we failed
+  # this is an empty transaction.  It should stop here until reset.
+  - name: empty
+    init_action:
+      - type: set
+        args:
+          variable: finished
+          value: true
+  - name: fail

@@ -1,0 +1,19 @@
+name: init_action
+init_action:
+- type: log
+  args:
+    value: "Starting init_action"
+    log_level: "WARNING"
+- type: callback
+  args:
+    url: "<<index .Bases \"testurl\">>/blah"
+    payload_contenttype: json
+    payload: actionpayload
+    auth_header: "<<index .Variables \"authorization\">>"
+    method: POST
+    response_type: json
+    save:
+    - guid
+- type: advance
+  args:
+    txn: transaction_1

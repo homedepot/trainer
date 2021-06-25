@@ -1,0 +1,33 @@
+---
+default_plan: basic_test
+bases:
+  url1: http://url1
+  url2: http://url2
+planinclude:
+  - plans/basic_test.yaml
+  - plans/testignorefailure.yaml
+  - plans/testnonignorefailure.yaml
+  - plans/testextvariables.yaml
+  - plans/testcounters.yaml
+  - plans/testdivide.yaml
+  - plans/testmultiply.yaml
+  - plans/testsubtract.yaml
+  - plans/testge.yaml
+  - plans/testgt.yaml
+  - plans/testle.yaml
+  - plans/testlt.yaml
+  - plans/testeq.yaml
+  - plans/testne.yaml
+  - plans/transactionvars.yaml
+  - plans/testsource.yaml
+  - plans/jsonresponseandvaraccess.yaml
+  - plans/testurlvariable.yaml
+  - plans/testconditionalvar.yaml
+  - plans/satisfygroup.yaml
+  - plans/testheader.yaml
+  - plans/splitcallback.yaml
+  - plans/splitcallbackwithwait.yaml
+  - plans/splitcallbackwithwaitfailure.yaml
+  - plans/callbackstring.yaml
+  - plans/testmatchstring.yaml
+  - plans/splitcallbackwithoutfinish.yaml

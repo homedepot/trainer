@@ -1,0 +1,69 @@
+name: cbstring
+# declare the variables this plan will use.
+variables:
+  guid: ""
+  response: ""
+  success: false
+  failure: false
+  finished: false
+  testvar: 0
+stop_var: finished
+externalvars: basic_test/variables.yml
+txn:
+  - name: callback
+    init_action:
+      - type: log
+        args:
+          value: "Starting init_action"
+          log_level: "WARNING"
+      - type: callback
+        args:
+          url: "<<index .Bases \"testurl\">>/blah"
+          payload_contenttype: json
+          payload: actionpayload
+          auth_header: "<<index .Variables \"authorization\">>"
+          method: POST
+          response_type: string
+          save_response: response
+      - type: advance
+        args:
+          txn: check_response
+  - name: check_response
+    init_action:
+      - type: conditional
+        args:
+          term:
+            variable: response
+            conditional: eq
+            conditional_value: "Pong"
+          advance_false: txn_failure
+          advance_true: txn_success
+  - name: txn_success
+    # do something that says we succeeded
+    init_action:
+      - type: set
+        args:
+          variable: success
+          value: true
+      - type: advance
+        args:
+          txn: empty
+  - name: txn_failure
+    init_action:
+      - type: set
+        args:
+          variable: failure
+          value: true
+      - type: advance
+        args:
+          txn: empty
+  # do something that says we failed
+  # this is an empty transaction.  It should stop here until reset.
+  - name: empty
+    init_action:
+      - type: set
+        args:
+          variable: finished
+          value: true
+  - name: fail
+

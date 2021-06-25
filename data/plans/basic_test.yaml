@@ -1,0 +1,121 @@
+  name: basic_test
+  # declare the variables this plan will use.
+  variables:
+    guid: ""
+    response: ""
+    success: false
+    failure: false
+    finished: false
+    testvar: 0
+  stop_var: finished
+  externalvars: basic_test/variables.yml
+  # this transaction calls a URL, gets a GUID back from it in the JSON
+  # (right now the json information has to be in the root!) and saves
+  # into a guid variable (declared above)
+  # then it advances state to txn:transaction_1
+  start_transaction: check_testvar
+  txninclude:
+    - file: basic_test/transactions/check_testvar.yml
+    - file: basic_test/transactions/set_testvar.yml
+    - file: basic_test/transactions/init_action.yml
+  txn:
+  - name: transaction_1
+    url: /api/v1/url1
+    data: url1_expect.yml
+    datatype: json
+    on_expected:
+      response: url1.yml
+      response_contenttype: application/json
+      response_code: 200
+      action:
+      - type: advance
+        args:
+          txn: transaction_2
+    on_unexpected:
+      response: url1_unexpected.yml
+      response_code: 401
+  - name: transaction_2
+    url: /api/v1/url2
+    data: url2_expect.yml
+    on_expected:
+      response: url2.yml
+      response_code: 200
+      action:
+      - type: advance
+        args:
+          txn: test_finish
+    on_unexpected:
+      response: url2_unexpected.yml
+      response_code: 401
+  # this transaction calls back to a URL defined by the first transaction above,
+  # waits five seconds, then advances to "empty".
+  # it is a standalone transaction.
+  - name: test_finish
+    init_action:
+    - type: callback
+      args:
+        # curly braces means a static template variable, angled are run on each execution
+        # of the action.
+        url: "<<index .Bases \"testurl\">>/<<index .Variables \"guid\">>"
+        payload_contenttype: json
+        payload: actionpayload
+        method: POST
+        response_type: json
+        save_response: response
+        save_response_map: responsemap
+    - type: wait
+      args:
+        duration: 5
+    - type: advance
+      args:
+        txn: check_complete
+  - name: check_complete
+    init_action:
+    - type: match
+      args:
+        match_file: incomplete.json
+        match_file_type: json
+        advance_true: check_success
+        advance_false: test_finish
+        variable: response
+        response_type: json
+  - name: check_success
+    init_action:
+    - type: match
+      args:
+        match_file: success.json
+        match_file_type: json
+        advance_true: txn_success
+        advance_false: txn_failure
+        variable: response
+        response_type: json
+     # no advance needed, we'll never get there.
+  - name: txn_success
+  # do something that says we succeeded
+    init_action:
+    - type: set
+      args:
+        variable: success
+        value: true
+    - type: advance
+      args:
+        txn: empty
+  - name: txn_failure
+    init_action:
+    - type: set
+      args:
+        variable: failure
+        value: true
+    - type: advance
+      args:
+        txn: empty
+  # do something that says we failed
+  # this is an empty transaction.  It should stop here until reset.
+  - name: empty
+    init_action:
+    - type: set
+      args:
+        variable: finished
+        value: true
+  - name: fail
+

@@ -1,0 +1,5 @@
+name: substituteme
+init_action:
+  - type: advance
+    args:
+      txn: [[index .Variables "something"]]

@@ -1,0 +1,9 @@
+name: set_testvar
+init_action:
+- type: set
+  args:
+    variable: testvar
+    value: 1
+- type: advance
+  args:
+    txn: init_action

@@ -1,0 +1,12 @@
+name: transactionvars
+# declare the variables this plan will use.
+txn:
+  - name: empty
+# (right now the json information has to be in the root!) and saves
+# into a guid variable (declared above)
+# then it advances state to txn:transaction_1
+start_transaction: substituteme
+txninclude:
+  - file: transactionvars/transactions/substituteme.yml
+    variables:
+      something: empty

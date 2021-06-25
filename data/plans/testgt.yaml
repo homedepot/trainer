@@ -1,0 +1,26 @@
+name: testgt
+variables:
+  counter: 3
+txn:
+  - name: conditional
+    init_action:
+    - type: conditional
+      args:
+        term:
+          variable: counter
+          conditional: gt
+          conditional_value: 2
+        advance_true: success
+        advance_false: failempty
+  - name: success
+    init_action:
+    - type: set
+      args:
+        variable: success
+        value: true
+    - type: advance
+      args:
+        txn: empty
+  - name: empty
+  - name: failempty
+

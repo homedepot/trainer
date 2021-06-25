@@ -1,0 +1,27 @@
+
+name: testeq
+variables:
+  counter: 0
+txn:
+  - name: conditional
+    init_action:
+    - type: conditional
+      args:
+        term:
+          variable: counter
+          conditional: eq
+          conditional_value: 2
+        advance_true: failempty
+        advance_false: success
+  - name: success
+    init_action:
+    - type: set
+      args:
+        variable: success
+        value: true
+    - type: advance
+      args:
+        txn: empty
+  - name: empty
+  - name: failempty
+
