@@ -34,7 +34,7 @@ var failure = heredoc.Doc(`{
 var successtrunc = heredoc.Doc(`{
   "result": {
     "allyourbase.example.com": {
-      "ci": "allyourbase.exammple.com",
+      "ci": "allyourbase.example.com",
       "finished": 1,
       "finishedbool": true,
       "success": 1,
