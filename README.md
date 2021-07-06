@@ -7,28 +7,20 @@ it is extremely flexible and can be used for nearly any microservice
 ecosystem, it is particularly useful for an ecosystem that must contact
 one or more external services as a component of processing its request.
 
-It has two main functions.  The first function is that it can kick off
-tests and query for the result of the test in whichever microservice it is
-testing.  The second is that is it capable of mocking any external service
-that the microservices will contact and returning the expected information.
-This allows for completely controlled tests.
+It has two main functions.
+* Trainer can kick off tests and provide the result of that test by contacting appropriate microservices.
+* Trainer can mock any external service that the microservices will contact
+and return the expected information. This allows for tests with completely controlled inputs.
 
 ### Rationale
 
-It is fairly easy to create tests for individual microservices
-using the built-in testing platforms of most development platforms,
-such as golang testing, python unittest and behave, and plenty of
-other tools. That is not the use case we were attempting to solve.
-However, we discovered that it is much more difficult to create tests
-that exercise the entire ecosystem while it's still running. After
-much research we did not find a suitable solution, so we built our
-own.
+Unit tests are relatively easy to create.  Integration tests are far more difficult.
+Tests that can exercise a running ecosystem are even more difficult, and this tool addresses that need.
 
 ## Theory of operation
 
-Trainer is stateful. It consists of a series of plans, each one
-of which represents one test scenario. Each plan consists of a
-series of transactions, each one of which represents either a set
+Trainer is a series of plans, one of which can be running at any time.
+Each plan consists of a series of transactions, each one of which represents either a set
 of actions that need to be performed, or an API transaction, in
 which case a series of actions are defined based upon whether the
 transaction was successful. As trainer moves through a plan,
@@ -41,27 +33,22 @@ plan succeeded.
 - The service must be restarted to reload the configuration file.  There is
   currently no concept whatsoever of dynamic plan loading or reloading.
 - Trainer can only use configuration files.  There is no other backend currently
-  supported.  Pull Requests welcome. :-)
-- Trainer is particularly poorly suited for stress-testing (and by
-  particularly poorly suited, we mean that it is pretty much
-  entirely useless by all standards. It can only run one plan at
-  a time, and can only be in one transaction at any given moment.
-  So its suitability is for functional testing, not stress testing
-  or any other kind of testing requiring concurrent activities.)
+  supported.  Pull requests welcome.
+- Trainer is poorly suited for stress-testing.
 - While there is a limited ability for parallel processing (a callback
-  can be split and other processes can occur while a callback is open)
+  can be split and other processes can occur while a callback is open),
   generally trainer will iterate through one state at a time.  This means
   there are some structural limitations that could only be fixed with a
-  pretty extensive rewrite.  Again, pull requests welcome :-)
+  pretty extensive rewrite.
 
 ## Starting
 
 Trainer is designed as a PCF (Pivotal Cloud Foundry) based microservice.
 Practically, this means that it accepts a PORT environment variable to figure
 out which port it needs to listen on.  It would be a "todo" to add support for
-different types of cloud environments, or make it environment agnostic.  The good news is,
-it's pretty much entirely unaware of the environment it's running under other than that environment
-variable, so tweaks should be simple.  Please generalize any tweaks and send them back.
+different types of cloud environments, or make it environment agnostic.  Trainer is
+unaware of the environment it's running under other than that environment
+variable, so tweaks should be simple.
 
 The following command line arguments are supported (If one is required but has a default, you don't have to specify):
 | Name | Env | Default | Required | Description |
@@ -75,67 +62,44 @@ The following command line arguments are supported (If one is required but has a
 | testmode | | | No | For development purposes |
 | testurl | | | No | For development purposes |
 
-Trainer uses kingpin, so see the Go kingpin documentation for further details on command line parsing.
+Trainer uses kingpin, so see the [Go kingpin documentation](https://pkg.go.dev/gopkg.in/alecthomas/kingpin.v2?utm_source=godoc) for further details on command line parsing.
 
 ## Using
 
-In order to use trainer, first you need plans.  Then you need to plan the plan.  Then you need to plan the plan's
-planny plan.  And if you can survive that you'll be "employee of the month", until the folks with the butterfly
-nets haul you off.
-
-Of course, you need a plan to do most anything, but in this case, you really do need
-plans.  Specifically, a plan can be thought of as a test.  A plan is kicked off through
+A plan can be thought of as a test.  A plan is kicked off through
 the API and runs to completion.  What completion *means* is a fully configurable thing.
 It could mean that you run through to a failure or success transaction which sets a variable.
-It could mean that it connects to an API somewhere and sends the information there.  Trainer
-really, quite honestly, doesn't care.  Whatever you think a good outcome (or a bad outcome) is,
-trainer can probably accommodate.  And if it can't, generally pull requests that make it able to accommodate those
-things are welcome.
+It could mean that it connects to an API somewhere and sends the information there. Whatever you
+think a good outcome (or a bad outcome) is, trainer can probably accommodate.
 
-So you write a plan and add it to config.yml.  Where you put the plans is about as configurable as
-the plans themselves.  At The Home Depot we have a set of plans that are configured in a specific way,
-but we're not inclined to tell you what that is, because the chances of it meeting your needs are pretty
-much zero.  But there are some test plans in the "data" directory of the source code, please feel free to
-use those for inspiration.  In fact, feel free to share anything you come up with and are comfortable sharing.
+To get started, write a plan and add it to config.yml.  Where you put the plans is fully configurable.
+There are some test plans in the "data" directory of the source code, please feel free to
+use those for inspiration.
 
-Once these plans are written and the service is successfully started in whichever service you are running it,
+Once these plans are written and the service is successfully started,
 then you can run a test.  Go ahead and launch the plan (see API below).  The plan should succeed, fail, or hang.
-Since this is, in a real sense, a platform, whether it succeeds, fails, or hangs is mostly dependent on how you
-wrote your tests. (there are some edge cases, but generally, your plan fate is in your hands)
 
 You can hit the "status" endpoint at any point to see how your tests are going.  That can also contain some valuable
 debugging info, and even more if you have configured your plans to set variables or log.
 
-Probably the biggest achilles heel to this service is the difficulty of creating plans.  See TODO below for ideas
-on what we'd like to see if you share this concern, or you can also check the community to see if there are some
-configurations you can use as a stepping stone.  Once you have that part figured out, it just works.
-
-With the following note.
-
-### FOLLOWING NOTE
-
-Trainer is, generally, not plug and play.  We mean that if your microservices or other services connect to an external
+Trainer is, generally, not plug and play.  If your microservices or other services connect to an external
 service, there is really no way for trainer to mock and/or proxy that service at the present time.  So the ecosystem
 has to be aware that it's running a test.  You can configure trainer to send specific headers that your services can
-recognize, to send special payloads, or ways we haven't yet thought of.  The point, though, is that your service has
-to know when to contact trainer instead of its own external services.  (You can, of course, use your external services,
-but that kind of removes one of the reasons trainer exists in the first place)
+recognize, or to send special payloads. Bottom line, your service has
+to know when to contact trainer instead of its own external services.
 
-However, once you have that set up, you gain the ability for "canary testing", in that you can submit tests to your
-services at the same time the services are doing Important Productioney Things.  We use trainer in this way at The Home
-Depot, we can process test jobs at the same time we are running production jobs, on the same service, and it works
-well for us.
+Once you have that set up, you gain the ability for "canary testing", in that you can submit tests to your
+services at the same time the services are serving production workloads.  Trainer was designed with
+this use case in mind, and works well for that purpose.
 
 ## TODOS
 
-There are many things that could be done to help make this a better product.
-While we will not limit acceptance of pull requests to these things, they are
-the things that come to mind as useful.
+Enhancement ideas:
 
 - Stored config somewhere other than yaml files
 - Web based UI for configuration and monitoring
 - Multiple in progress tests (somehow!)
-- Proxying of external services (? We'll decide if this is a good idea based on pull requests :-) )
+- Proxying of external services
 
 ## API
 
@@ -151,7 +115,8 @@ The plan must exist or an error will be returned.
 
 The plan will be implicitly reset.
 
-If you add a "planincludes" array, you may specify plans as individual
+<!--
+If you specify a "planincludes" array in the configuration, you may add plans as individual
 files,
 
 ```
@@ -169,6 +134,7 @@ that, please) you can load in external variables. This is good for things
 like the authorization headers, etc., which can be templated.
 
 See the test configs for an example.
+-->
 
 ### Reset
 
@@ -426,8 +392,7 @@ file.
 
 Note also that when something is provided to match, it can be of
 any complexity, but it has to _exactly_ match the structure of the
-response json. The comparison is about as deep as a Dostoevsky
-book, so the json has to be exactly the same _when it's provided_.
+response JSON.
 
 ###### Args
 
@@ -452,9 +417,6 @@ The result of the operation is stored in the supplied variable.
 
 The math operations supported are add, subtract, multiply, divide,
 and any _one or two operand_ math operation imported by the math library.
-
-Theoretically this means you could do operations such as cube root,
-etc., though that would be an unusual use case.
 
 ###### Args
 
@@ -497,7 +459,7 @@ clause. If you do so, the behavior is undefined, and is almost
 guaranteed to not do what you expect.
 
 Note that the "url" field in the transaction exists to provide for
-backwards compatibility with existing tests at The Home Depot. For
+backwards compatibility with existing tests. For
 new tests, you should specify this action specifically.
 
 If a satisfy group is specified, you may optionally include an on_expected
