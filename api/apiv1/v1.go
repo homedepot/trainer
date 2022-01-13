@@ -67,7 +67,7 @@ func (v *V1) Launch(cfg *config.Config) func(*gin.Context) {
 func (v *V1) ConfigAPI(cfg *config.Config) func(*gin.Context) {
 	return func(c *gin.Context) {
 
-		configstr, err := yaml.Marshal(c)
+		configstr, err := yaml.Marshal(cfg)
 		if err != nil {
 			resp := api.HTTPReturnStruct{
 				Message:    err.Error(),
@@ -78,7 +78,7 @@ func (v *V1) ConfigAPI(cfg *config.Config) func(*gin.Context) {
 			return
 		}
 		c.Writer.WriteHeader(200)
-		c.Writer.Write(configstr)
+		_, _ = c.Writer.Write(configstr)
 	}
 }
 
