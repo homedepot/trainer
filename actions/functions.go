@@ -9,10 +9,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/homedepot/trainer/security"
 	"github.com/homedepot/trainer/structs/plan"
 	"github.com/juju/loggo"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"strconv"
 	"text/template"
@@ -193,8 +194,14 @@ func ExecuteComparison(p *plan.Plan, data string, path string, strbody string, f
 
 	logger := loggo.GetLogger("default")
 
+	// Validate data file path to prevent path traversal
+	if err := security.ValidatePath(data, ""); err != nil {
+		logger.Criticalf("Data file path validation failed: %s", err.Error())
+		return nil, err
+	}
+
 	// Get expected data.
-	expected, err := ioutil.ReadFile(data)
+	expected, err := os.ReadFile(data)
 	if err != nil {
 		// Could not read file. Fail the test.
 		// TODO should we add some Slack posting functionality here? (Douglas)

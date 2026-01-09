@@ -11,13 +11,14 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/homedepot/trainer/actions"
 	"github.com/homedepot/trainer/config"
+	"github.com/homedepot/trainer/security"
 	"github.com/homedepot/trainer/structs/expected"
 	"github.com/homedepot/trainer/structs/plan"
 	"github.com/homedepot/trainer/structs/planaction"
 	"github.com/juju/loggo"
 	"github.com/mitchellh/mapstructure"
 	"github.com/mohae/deepcopy"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"strconv"
 	"text/template"
@@ -271,7 +272,16 @@ func ProcessTests(kill chan *bool) {
 		return
 	}
 	ctx.Ctx.Writer.WriteHeader(code)
-	rawresponsestr, err := ioutil.ReadFile(e.Response)
+	
+	// Validate response file path to prevent path traversal
+	if err := security.ValidatePath(e.Response, ""); err != nil {
+		logger.Warningf("Response file path validation failed: %s", err)
+		tst.tst.State.Err = err
+		tst.processing = false
+		return
+	}
+	
+	rawresponsestr, err := os.ReadFile(e.Response)
 	if err != nil {
 		logger.Warningf("Couldn't read response file %s: %s", e.Response, err)
 		tst.tst.State.Err = err

@@ -24,16 +24,21 @@ type Version interface {
 }
 
 // WriteOutput writes HTTP request results to client.
-// WriteOutput writes HTTP request results to client.
 func (e HTTPReturnStruct) WriteOutput(c *gin.Context) {
-	var outbuf = []byte{}
 	c.Writer.Header().Set("Content-Type", "application/json")
 	c.Writer.WriteHeader(e.ReturnCode)
 
 	// Convert the receiver HTTPReturnStruct to JSON.
 	outbuf, err := json.Marshal(e)
 	if err != nil {
-		panic("json marshal of HTTPReturnStruct failed ---> fatal application error. " + err.Error() + " " + e.Message)
+		// Log the marshal error and send a generic error response
+		logger := loggo.GetLogger("default")
+		logger.Errorf("Failed to marshal HTTPReturnStruct: %v, message: %s", err, e.Message)
+		
+		// Send a fallback error response
+		c.Writer.WriteHeader(500)
+		c.Writer.Write([]byte(`{"message":"Internal server error: failed to encode response","error":true}`))
+		return
 	}
 	c.Writer.Write(outbuf)
 	logger := loggo.GetLogger("default")

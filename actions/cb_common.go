@@ -9,10 +9,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/homedepot/trainer/security"
 	"github.com/homedepot/trainer/structs/plan"
 	"github.com/juju/loggo"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"reflect"
 	"strings"
 )
@@ -107,7 +109,13 @@ func DoCallback(a ArgStruct, p *plan.Plan, ctx context.Context) (r ExecuteResult
 	}
 
 	if payload != nil && payload.(string) != "" {
-		out, err := ioutil.ReadFile(payload.(string))
+		// Validate payload file path to prevent path traversal
+		if err := security.ValidatePath(payload.(string), ""); err != nil {
+			logger.Warningf("Payload file path validation failed: %s", err)
+			return
+		}
+		
+		out, err := os.ReadFile(payload.(string))
 		if err != nil {
 			logger.Warningf("Couldn't read payload file: %s", payload.(string))
 			return
@@ -177,7 +185,7 @@ func DoCallback(a ArgStruct, p *plan.Plan, ctx context.Context) (r ExecuteResult
 		return
 	}
 
-	rs, err := ioutil.ReadAll(resp.Body)
+	rs, err := io.ReadAll(resp.Body)
 	if err != nil {
 		r.Err = err
 		return

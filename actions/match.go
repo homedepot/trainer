@@ -9,9 +9,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/homedepot/trainer/security"
 	"github.com/homedepot/trainer/structs/plan"
 	"github.com/juju/loggo"
-	"io/ioutil"
+	"os"
 	"reflect"
 )
 
@@ -138,8 +139,14 @@ func (m *Match) LoadFile(n string, t string) (interface{}, error) {
 
 	var f func(string) (interface{}, error)
 
+	// Validate match file path to prevent path traversal
+	if err := security.ValidatePath(n, ""); err != nil {
+		logger.Criticalf("match file path validation failed: %s", err.Error())
+		return nil, err
+	}
+
 	// Capture match file.
-	body, err := ioutil.ReadFile(n)
+	body, err := os.ReadFile(n)
 	if err != nil {
 		logger.Criticalf("match file read failed: %s", err.Error())
 		return nil, err

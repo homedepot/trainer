@@ -112,7 +112,7 @@ func (v *V1) Status(cfg *config.Config) func(*gin.Context) {
 			return
 		}
 		c.Writer.WriteHeader(200)
-		c.Writer.Write(sout)
+		_, _ = c.Writer.Write(sout)
 	}
 }
 
@@ -122,6 +122,6 @@ func (v *V1) Remove(cfg *config.Config, h *handler.Handler) func(*gin.Context) {
 
 		h.Reset()
 		c.Writer.WriteHeader(200)
-		c.Writer.Write([]byte(`{"message": "remove succeeded", "error": false}`))
+		_, _ = c.Writer.Write([]byte(`{"message": "remove succeeded", "error": false}`))
 	}
 }

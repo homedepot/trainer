@@ -7,13 +7,14 @@ package config
 
 import (
 	"errors"
+	"github.com/homedepot/trainer/security"
 	"github.com/homedepot/trainer/structs/plan"
 	"github.com/homedepot/trainer/structs/state"
 	"github.com/homedepot/trainer/structs/transaction"
 	"github.com/juju/loggo"
 	"github.com/mohae/deepcopy"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"os"
 )
 
 // Config struct for housing configuration data,
@@ -35,9 +36,14 @@ func NewConfig(cfile string, tm bool, tURL string, bases map[string]string) (*Co
 
 	config := Config{}
 
+	// Validate config file path to prevent path traversal
+	if err := security.ValidatePath(cfile, ""); err != nil {
+		return nil, err
+	}
+
 	// Read configuration file and then
 	// marshal the YAML into our []byte.
-	b, err := ioutil.ReadFile(cfile)
+	b, err := os.ReadFile(cfile)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +194,13 @@ func (c *Config) LoadPlans() error {
 
 func (c *Config) LoadPlanFile(name string) error {
 	logger := loggo.GetLogger("default")
-	str, err := ioutil.ReadFile(name)
+	
+	// Validate plan file path to prevent path traversal
+	if err := security.ValidatePath(name, ""); err != nil {
+		return err
+	}
+	
+	str, err := os.ReadFile(name)
 	if err != nil {
 		return err
 	}
@@ -225,7 +237,12 @@ func (c *Config) LoadVars() error {
 		}
 
 		if c.Plans[i].ExtVarFile != "" {
-			str, err := ioutil.ReadFile(c.Plans[i].ExtVarFile)
+			// Validate external variable file path to prevent path traversal
+			if err := security.ValidatePath(c.Plans[i].ExtVarFile, ""); err != nil {
+				return err
+			}
+			
+			str, err := os.ReadFile(c.Plans[i].ExtVarFile)
 			if err != nil {
 				return err
 			}

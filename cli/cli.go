@@ -10,18 +10,19 @@ import (
 )
 
 type Options struct {
-	APIListenPort      string
-	APIListenHost      string
-	APIAuthUsername    string
-	APIAuthPass        string
-	MongoConnectionURL string
-	MongoDBCollection  string
-	LogLevel           string
-	TestMode           bool
-	TestURL            string
-	Bases              map[string]string
-	ConfigFile         string
-	App                *kingpin.Application
+	APIListenPort          string
+	APIListenHost          string
+	APIAuthUsername        string
+	APIAuthPass            string
+	MongoConnectionURL     string
+	MongoDBCollection      string
+	LogLevel               string
+	TestMode               bool
+	TestURL                string
+	Bases                  map[string]string
+	ConfigFile             string
+	InsecureSkipVerify     bool
+	App                    *kingpin.Application
 }
 
 func NewOptions() *Options {
@@ -41,6 +42,7 @@ func (o *Options) Parse(args []string) {
 	TestMode := app.Flag("testmode", "Enable for unit testing").Envar("TESTMODE").Default("false").Bool()
 	TestURL := app.Flag("testurl", "URL for testing purposes").Envar("TESTURL").Default("").String()
 	Bases := app.Flag("bases", "URL for testing purposes").Envar("BASES").StringMap()
+	InsecureSkipVerify := app.Flag("insecure-skip-verify", "Skip TLS certificate verification (insecure, use only in trusted networks)").Envar("INSECURE_SKIP_VERIFY").Default("false").Bool()
 
 	kingpin.MustParse(app.Parse(args))
 
@@ -53,6 +55,7 @@ func (o *Options) Parse(args []string) {
 	o.TestMode = *TestMode
 	o.TestURL = *TestURL
 	o.Bases = *Bases
+	o.InsecureSkipVerify = *InsecureSkipVerify
 
 	o.App = app
 }

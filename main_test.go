@@ -10,7 +10,7 @@ import (
 	"github.com/homedepot/trainer/handler"
 	"github.com/homedepot/trainer/router"
 	"github.com/homedepot/trainer/structs/state"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -74,7 +74,7 @@ func TestMain(m *testing.M) {
 }
 
 func FailWithMessage(t *testing.T, message string) {
-	log.Printf(message)
+	log.Printf("%s", message)
 	t.Fail()
 }
 
@@ -223,7 +223,7 @@ func TestGetFirstTransaction(t *testing.T) {
 			w.WriteHeader(200)
 			w.Write([]byte(`{"message": "Something", "guid": "000000", "error": false}`))
 			log.Printf("Got callback %s", r.URL.Path)
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				FailWithMessage(t, "Couldn't read body: "+err.Error())
 			}
@@ -291,7 +291,7 @@ func TestRunPlanCorrectCompleteSuccess(t *testing.T) {
 			w.WriteHeader(200)
 			w.Write([]byte(`{"message": "Something", "guid": "GUID", "error": false}`))
 			log.Printf("Got callback %s", r.URL.Path)
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				FailWithMessage(t, "Couldn't read body: "+err.Error())
 			}
@@ -371,7 +371,7 @@ func TestRunPlanCorrectCompleteSuccess(t *testing.T) {
 
 	_, resp = MakeRequest(o, "POST", "/capi/v1/status", "", t, 200)
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	sst := state.State{}
 	err := json.Unmarshal(body, &sst)
 	if err != nil {
@@ -403,7 +403,7 @@ func TestRunPlanCorrectCompleteFailure(t *testing.T) {
 			w.WriteHeader(200)
 			w.Write([]byte(`{"message": "Something", "guid": "GUID", "error": false}`))
 			log.Printf("Got callback %s", r.URL.Path)
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				FailWithMessage(t, "Couldn't read body: "+err.Error())
 			}
@@ -480,7 +480,7 @@ func TestRunPlanCorrectCompleteFailure(t *testing.T) {
 
 	_, resp = MakeRequest(o, "POST", "/capi/v1/status", "", t, 200)
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	sst := state.State{}
 	err := json.Unmarshal(body, &sst)
 	if err != nil {
@@ -512,7 +512,7 @@ func TestRunPlanCorrectIncomplete(t *testing.T) {
 			w.WriteHeader(200)
 			w.Write([]byte(`{"message": "Something", "guid": "GUID", "error": false}`))
 			log.Printf("Got callback %s", r.URL.Path)
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				FailWithMessage(t, "Couldn't read body: "+err.Error())
 			}
@@ -573,7 +573,7 @@ func TestRunPlanCorrectIncomplete(t *testing.T) {
 	assert.Equal(t, "transaction_2", p.State.States[4].TxnName, "Incorrect Transaction %s", p.State.States[4].TxnName)
 
 	_, resp = MakeRequest(o, "POST", "/capi/v1/status", "", t, 200)
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	st := state.State{}
 	err := json.Unmarshal(body, &st)
 	if err != nil {
@@ -606,7 +606,7 @@ func TestRunPlanCorrectWithRemove(t *testing.T) {
 			w.WriteHeader(200)
 			w.Write([]byte(`{"message": "Something", "guid": "GUID", "error": false}`))
 			log.Printf("Got callback %s", r.URL.Path)
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				FailWithMessage(t, "Couldn't read body: "+err.Error())
 			}
@@ -671,7 +671,7 @@ func TestRunPlanCorrectWithRemove(t *testing.T) {
 	time.Sleep(200 * time.Millisecond)
 
 	_, resp = MakeRequest(o, "POST", "/capi/v1/status", "", t, 200)
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	st := api.HTTPReturnStruct{}
 	err := json.Unmarshal(body, &st)
 	if err != nil {
@@ -691,7 +691,7 @@ func TestRunPlanIncorrectURLs(t *testing.T) {
 			w.WriteHeader(200)
 			w.Write([]byte(`{"message": "Something", "error": false}`))
 			log.Printf("Got callback %s", r.URL.Path)
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				FailWithMessage(t, "Couldn't read body: "+err.Error())
 			}
@@ -742,7 +742,7 @@ func TestRunPlanCorrectURLsIncorrectText(t *testing.T) {
 			w.WriteHeader(200)
 			w.Write([]byte(`{"message": "Something", "error": false}`))
 			log.Printf("Got callback %s", r.URL.Path)
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				FailWithMessage(t, "Couldn't read body: "+err.Error())
 			}
@@ -834,7 +834,7 @@ func TestGoToConfigDir(t *testing.T) {
 				err       error
 			)
 			assert := assert.New(t)
-			configDir, err = ioutil.TempDir("", "config")
+			configDir, err = os.MkdirTemp("", "config")
 			if err != nil {
 				t.Fatalf("Could not create temp dir: %s", err)
 			}
@@ -1160,7 +1160,7 @@ func TestRunPlanJRAVA(t *testing.T) {
 			w.WriteHeader(200)
 			w.Write([]byte(`{"map1": {"node1": "value", "node2": "value"}}`))
 			log.Printf("Got callback %s", r.URL.Path)
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				FailWithMessage(t, "Couldn't read body: "+err.Error())
 			}

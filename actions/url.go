@@ -11,7 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/homedepot/trainer/structs/plan"
 	"github.com/juju/loggo"
-	"io/ioutil"
+	"io"
 	"reflect"
 )
 
@@ -64,7 +64,7 @@ func (u *URL) Execute(p *plan.Plan) (r ExecuteResult) {
 		r.Complete = true
 		return
 	}
-	body, err := ioutil.ReadAll(ctx.Ctx.Request.Body)
+	body, err := io.ReadAll(ctx.Ctx.Request.Body)
 	if err != nil {
 		logger.Criticalf("Couldn't read request body, Failing test. (%s)", err.Error())
 		r.Err = err

@@ -8,12 +8,13 @@ package plan
 import (
 	"bytes"
 	"errors"
+	"github.com/homedepot/trainer/security"
 	"github.com/homedepot/trainer/structs/state"
 	"github.com/homedepot/trainer/structs/transaction"
 	"github.com/juju/loggo"
 	"github.com/mohae/deepcopy"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"text/template"
 	"time"
@@ -82,7 +83,13 @@ func (p *Plan) InitializeTransactions() {
 
 func (p *Plan) LoadTxnFile(txn TxnInclude) error {
 	logger := loggo.GetLogger("default")
-	str, err := ioutil.ReadFile(txn.File)
+	
+	// Validate transaction file path to prevent path traversal
+	if err := security.ValidatePath(txn.File, ""); err != nil {
+		return err
+	}
+	
+	str, err := os.ReadFile(txn.File)
 	if err != nil {
 		return err
 	}

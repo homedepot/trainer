@@ -8,7 +8,8 @@ package core
 import (
 	"bytes"
 	"crypto/tls"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"net/http"
 	"time"
 )
@@ -16,7 +17,9 @@ import (
 // TODO : Need to figure out how to access Slack variables in Vault (not working like in pipeline files)
 
 // SlackPost posts payload to Slack.
-func SlackPost(payload []byte, url string) error {
+// insecureSkipVerify should only be set to true in trusted internal networks.
+// In production, this should be false to ensure TLS certificate validation.
+func SlackPost(payload []byte, url string, insecureSkipVerify bool) error {
 
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	if err != nil {
@@ -29,7 +32,7 @@ func SlackPost(payload []byte, url string) error {
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: insecureSkipVerify},
 		Proxy:           http.ProxyURL(proxyURL),
 	}
 
@@ -48,13 +51,13 @@ func SlackPost(payload []byte, url string) error {
 
 	defer response.Body.Close()
 
-	_, err = ioutil.ReadAll(response.Body)
+	_, err = io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
 
 	if response.StatusCode >= 300 || response.StatusCode < 200 {
-		return err
+		return fmt.Errorf("slack post failed with status code: %d", response.StatusCode)
 	}
 
 	return nil
