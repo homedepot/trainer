@@ -124,7 +124,7 @@ func ParseTemplate(p *plan.Plan, args map[string]interface{}) (map[string]interf
 }
 
 // EqualStrings returns a boolean value
-// for string comparison, as well as error.
+// for string comparison, as well as an error.
 func EqualStrings(input string, expected string) (bool, interface{}, error) {
 	logger := loggo.GetLogger("default")
 	logger.Tracef("Entering the incomparably boring EqualStrings")
@@ -138,7 +138,7 @@ func EqualStrings(input string, expected string) (bool, interface{}, error) {
 }
 
 // EqualJSON returns a boolean value
-// for JSON comparison, as well as error.
+// for JSON comparison, as well as an error.
 func EqualJSON(input string, expected string) (bool, interface{}, error) {
 	logger := loggo.GetLogger("default")
 	logger.Tracef("Entering CompareJSON")
@@ -166,7 +166,7 @@ func EqualJSON(input string, expected string) (bool, interface{}, error) {
 }
 
 // EqualYAML returns a boolean value
-// for YAML comparison, as well as error.
+// for YAML comparison, as well as an error.
 func EqualYAML(input string, expected string) (bool, interface{}, error) {
 	logger := loggo.GetLogger("default")
 	logger.Tracef("Entering EqualYAML")

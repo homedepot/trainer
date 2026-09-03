@@ -178,7 +178,7 @@ func MatchingInterfaces(mFile interface{}, candidate interface{}) bool {
 	logger := loggo.GetLogger("default")
 
 	// Capture the type of our input, and
-	// compare it to our pared interface type.
+	// compare it to our parsed interface type.
 	switch t := mFile.(type) {
 	case map[string]interface{}:
 		if reflect.TypeOf(candidate).String() != "map[string]interface {}" {
