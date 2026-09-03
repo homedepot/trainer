@@ -186,7 +186,7 @@ func (c *Config) LoadPlans() error {
 		if err != nil {
 			logger.Warningf("Couldn't load transactions: %s", err)
 		}
-		// generate any on-the-fly transaction stuffs needed (like URL actions)
+		// generate any on-the-fly transaction stuff needed (like URL actions)
 		c.Plans[k].InitializeTransactions()
 	}
 	return nil
